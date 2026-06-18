@@ -10,7 +10,7 @@
         <div class="badge-stok">
             Total Jenis Aset: <span>{{ daftarBarang.length }}</span>
         </div>
-        <button button @click="isLogoutModalOpen = true" class="btn-logout-trigger">
+        <button button @click="bukaModalLogout" class="btn-logout-trigger">
             Logout
         </button>
       </div>
@@ -125,7 +125,7 @@
                 <td class="text-center">
                   <div class="action-buttons">
                     <button @click="pilihEdit(barang)" class="btn-icon edit" title="Edit"></button>
-                    <button @click="hapusBarang(barang.id)" class="btn-icon delete" title="Hapus"></button>
+                    <button @click="bukaModalHapus(barang.id)" class="btn-icon delete" title="Hapus"></button>
                   </div>
                 </td>
               </tr>
@@ -135,60 +135,96 @@
       </section>
     </div>
 
-    <div v-if="isLogoutModalOpen" class="modal-backdrop">
-        <div class="modal-card">
-            <h3>Konfirmasi Logout</h3>
-            <p>Apakah Anda yakin ingin mengakhiri sesi dan keluar dari sistem inventaris?</p>
-            <div class="modal-actions">
-                <button @click="isLogoutModalOpen = false" class="btn btn-secondary">
-                    Batal
-                </button>
-                <button @click="prosesLogout" class="btn btn-danger">
-                    Ya, Keluar
-                </button>
-            </div>
+    <div v-if="modal.isOpen" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-icon">
+          {{ modal.type === 'logout' ? '⚠️' : '🗑️' }}
         </div>
+
+        <h3>
+          {{ modal.type === 'logout' ? 'Konfirmasi Logout' : 'Hapus Aset' }}
+        </h3>
+
+        <p>
+          {{
+            modal.type === 'logout'
+            ? 'Apakah Anda yakin ingin mengakhiri sesi dan keluar dari sistem?'
+            : 'Aset yang dihapus tidak dapat dikembalikan. Yakin ingin melanjutkan?'
+          }}
+        </p>
+
+        <div class="modal-actions">
+          <button @click="tutupModal" class="btn btn-secondary">
+            Batal
+          </button>
+          <button @click="konfirmasiModal" class="btn btn-danger">
+            {{ modal.type === 'logout' ? 'Ya, Keluar' : 'Ya, Hapus Data' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="toast.show"
+      :class="['toast-notification', toast.type === 'error' ? 'toast-error' : 'toast-success']"
+    >
+      {{ toast.message }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { supabase } from '../supabase'
 
 // STATE MANAGEMENT
 const daftarBarang = ref([])
 const isEditing = ref(false)
+const formBarang = ref({ id: null, nama_barang: '', kategori: '', stok: 0, kondisi: 'Baik'})
 
-// OBJECT STRUKTUR DATA UNTUK PENAMPUNG INPUT FORM
-const formBarang = ref ({
-  id: null,
-  nama_barang: '',
-  kategori: '',
-  stok: 0,
-  kondisi: 'Baik'
-})
+//STATE TOAST NOTIFICATION
+const toast = ref({ show: false, message: '', type: 'success' })
 
-// MEMBACA DATA (READ)
+const tampilkanToast = (message, type = 'success') => {
+  toast.value = { show: true, message, type }
+  //MENGATUR WAKTU TOAST OTOMATIS SELAMA 3 DETIK
+  setTimeout(() => {
+    toast.value.show = false
+  }, 5000)
+}
+
+//STATE DYNAMIC MODAL
+const modal = ref({ isOpen: false, type: '', targetId: null })
+
+const bukaModalLogout = () => {
+  modal.value = { isOpen: true, type: 'logout', targetId: null }
+}
+
+const bukaModalHapus = (id) => {
+  modal.value = { isOpen: true, type: 'delete', targetId: id }
+}
+
+const tutupModal = () => {
+  modal.value.isOpen = false
+}
+
+const konfirmasiModal = () => {
+  if (modal.value.type === 'logout') prosesLogout()
+  else if (modal.value.type === 'delete') eksekusiHapus(modal.value.targetId)
+}
+
+//LOGIKA CRUD UTAMA
 const ambilData = async () => {
   const { data, error } = await supabase
     .from('barang')
     .select('*')
     .order('id', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching data:', error)
-    return
-  }
-
-  daftarBarang.value = data
+  if (!error) daftarBarang.value = data
 }
-
-// CREATE & UPDATE LOGIC
 const simpanBarang = async () => {
   if(!formBarang.value.nama_barang || !formBarang.value.kategori) {
-    alert('Harap isi semua kolom utama')
+    tampilkanToast('Harap isi semua kolom utama!', 'error')
     return
   }
 
@@ -201,18 +237,17 @@ const simpanBarang = async () => {
       kategori: formBarang.value.kategori,
       stok: formBarang.value.stok,
       kondisi: formBarang.value.kondisi
-    })
-    .eq('id', formBarang.value.id)
+    }).eq('id', formBarang.value.id)
 
     if (error) {
-      console.error('Gagal memperbarui data: ', error)
+      tampilkanToast('Gagal memperbarui data', 'error')
     } else {
       batalEdit()
+      tampilkanToast('Perubahan berhasil disimpan!', 'success')
     }
   } else {
-    console.log("Sedang mengirim data ke Supabase...", formBarang.value)
     //MENJALANKAN FUNGSI CREATE JIKA DATA BARU
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('barang')
       .insert([
         {
@@ -222,21 +257,29 @@ const simpanBarang = async () => {
           kondisi: formBarang.value.kondisi
         }
       ])
-      .select()
 
     if (error) {
-      console.error('Gagal menambahkan data:', error)
-      alert('Terjadi kesalahan: ' + (error.message || JSON.stringify(error)))
-      return
+      tampilkanToast('Gagal menambahkan data', 'error')
+    } else {
+      resetForm()
+      tampilkanToast('Aset berhasil ditambahkan!', 'success')
     }
-
-    console.log('Data berhasil ditambahkan ke database!', data)
-    alert('Sukses! Barang baru berhasil di tambahkan.')
-    resetForm()
   }
-
   // Pastikan list ter-refresh setelah create/update
-  await ambilData() //MEMPERBARUI TAMPILAN ISI LIST
+  ambilData() //MEMPERBARUI TAMPILAN ISI LIST
+}
+
+// Fungsi eksekusi hapus yang dipanggil oleh Modal
+const eksekusiHapus = async (id) => {
+  const { error } = await supabase.from('barang').delete().eq('id', id)
+
+  if (error) {
+    tampilkanToast('Gagal menghapus data', 'error')
+  } else {
+    tutupModal()
+    ambilData()
+    tampilkanToast('Aset berhasil di hapus', 'success')
+  }
 }
 
 //TRIGGER EDIT MODE
@@ -251,45 +294,22 @@ const batalEdit = () => {
   resetForm()
 }
 
-// MENGHAPUS DATA (DELETE)
-const hapusBarang = async (id) => {
-  if(!confirm('Apakah anda yakin ingin menghapus aset ini?')) return
-
-  const { error } = await supabase
-  .from('barang')
-  .delete()
-  .eq('id', id)
-
-  if (error) console.error('Gagal menghapus data', error)
-  else ambilData()
-}
-
-// HELPER UNTUK MEMBERSIHKAN KOLOM INPUT
 const resetForm = () => {
   formBarang.value = { id: null, nama_barang: '', kategori: '', stok: 0, kondisi: 'Baik' }
 }
-
-onMounted(() => {
-  ambilData()
-})
-
-//STATE LOGOUT MODAL
-const router = useRouter()
-const isLogoutModalOpen = ref(false)
 
 //FUNGSI LOGOUT SUPABASE
 const prosesLogout = async () => {
     //MEMANGGIL FUNGSI KELUAR DARI SUPABASE
     const { error } = await supabase.auth.signOut()
 
-    if(error) {
-        console.error('Gagal melakukan logout:', error)
-        alert('Terjadi kesalahan saat melakukan logout: ' + error.message)
-    } else {
-        //TUTUP MODAL
-        isLogoutModalOpen.value = false
-    }
+    if(error) tampilkanToast('Gagal melakukan logout', 'error')
+    else tutupModal()
 }
+
+onMounted(() => {
+  ambilData()
+})  
 </script>
 
 <style>
@@ -646,6 +666,42 @@ input:focus, select:focus {
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* --- Toast Notification --- */
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.toast-success {
+  background-color: var(--accent-success);
+  border: 1px solid #059669;
+}
+
+.toast-error {
+  background-color: var(--accent-danger);
+  border: 1px solid #dc2626;
+}
+
+/* Animasi untuk Toast */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 </style>
