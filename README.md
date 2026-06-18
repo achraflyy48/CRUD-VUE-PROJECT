@@ -27,9 +27,8 @@ Sebuah aplikasi web *Single Page Application* (SPA) modern untuk mengelola penca
 
 ## 📸 Pratinjau Antarmuka (Screenshots)
 
-*(Ganti teks ini dengan gambar hasil tangkapan layar/screenshot aplikasimu saat sudah di-push ke GitHub)*
-- ![Halaman Login](/screenshot-login.png)
-- ![Halaman Dashboard CRUD](/screenshot-dashboard.png)
+![Halaman Login](src/assets/halamanLogin.png)
+![Halaman Dashboard CRUD](src/assets/halamanDashborad.png)
 
 ---
 
@@ -40,3 +39,36 @@ Untuk menjalankan aplikasi ini di komputer lokal, pastikan Anda sudah menginstal
 **1. Clone repositori ini**
 ```bash
 git clone [https://github.com/USERNAME_GITHUB_KAMU/nama-repo-kamu.git](https://github.com/USERNAME_GITHUB_KAMU/nama-repo-kamu.git)
+```
+
+**2. Masuk ke Direktori Proyek**
+```bash
+cd CRUD-VUE-PROJECT
+```
+
+**3. Instal semua dependensi (dependencies)**
+```bash
+npm install
+```
+
+**4. Konfigurasi Environment Variables**<br>
+Buat file .env di direktori utama (root) dan tambahkan kredensial Supabase Anda:
+```bash
+VITE_SUPABASE_URL=masukkan_url_supabase_anda_disini
+VITE_SUPABASE_ANON_KEY=masukkan_anon_key_supabase_anda_disini
+```
+
+**5. Jalankan server pengembangan (development server)**
+```bash
+npm run dev
+```
+Buka browser dan akses alamat lokal yang diberikan oleh Vite (biasanya http://localhost:5173).
+
+## 💡 Developer Notes & Pembelajaran
+Proyek ini dibangun untuk mendemonstrasikan pemahaman mendalam tentang arsitektur Front-End modern, termasuk:
+<ul>
+  <li>Penerapan pola desain Asynchronous Javascript (async/await) untuk berkomunikasi dengan REST API secara efisien.</li>
+  <li>Manajemen State reaktif menggunakan ref di Vue 3.</li>
+  <li>Konsep Prinsip DRY (Don't Repeat Yourself) dalam membangun komponen antarmuka yang dinamis, seperti Dynamic Modal yang dapat berubah wujud sesuai konteks interaksi (Logout / Delete).</li>
+  <li>Penyelesaian bug tingkat lanjut seperti Race Condition pada alur autentikasi Single Page Application.</li>
+</ul>
