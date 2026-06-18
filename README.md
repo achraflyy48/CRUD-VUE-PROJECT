@@ -38,7 +38,7 @@ Untuk menjalankan aplikasi ini di komputer lokal, pastikan Anda sudah menginstal
 
 **1. Clone repositori ini**
 ```bash
-git clone [https://github.com/USERNAME_GITHUB_KAMU/nama-repo-kamu.git](https://github.com/USERNAME_GITHUB_KAMU/nama-repo-kamu.git)
+git clone https://github.com/achraflyy48/CRUD-VUE-PROJECT.git
 ```
 
 **2. Masuk ke Direktori Proyek**
