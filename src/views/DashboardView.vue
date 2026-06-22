@@ -454,11 +454,31 @@ body {
     grid-template-columns: 1fr;
   }
 
-  /* Supaya tabel tidak “memaksa” tinggi layout */
+  /* Supaya tabel mengikuti lebar mobile (tanpa efek scroll samping) */
+  .dashboard-content {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .form-panel,
+  .table-panel {
+    width: 100%;
+    max-width: 100vw;
+  }
+
   .table-container {
     max-height: calc(100dvh - 20rem);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
   }
+
+  .inventaris-table {
+    width: 100%;
+    table-layout: fixed;
+    word-break: break-word;
+  }
+
 
   .toast-notification {
     bottom: 1rem;
