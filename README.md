@@ -4,6 +4,11 @@ Sebuah aplikasi web *Single Page Application* (SPA) modern untuk mengelola penca
 
 ---
 
+## 🌐 Live Demo
+Silahkan bisa akses websitenya disini : https://crud-vue-project.vercel.app/
+
+---
+
 ## ✨ Fitur Utama (Key Features)
 
 - **🔐 Autentikasi Aman:** Sistem login khusus Admin menggunakan Supabase Auth (Email & Password) dengan proteksi *Navigation Guards* (Vue Router) untuk mengamankan *dashboard*.
@@ -63,6 +68,8 @@ VITE_SUPABASE_ANON_KEY=masukkan_anon_key_supabase_anda_disini
 npm run dev
 ```
 Buka browser dan akses alamat lokal yang diberikan oleh Vite (biasanya http://localhost:5173).
+
+---
 
 ## 💡 Developer Notes & Pembelajaran
 Proyek ini dibangun untuk mendemonstrasikan pemahaman mendalam tentang arsitektur Front-End modern, termasuk:
