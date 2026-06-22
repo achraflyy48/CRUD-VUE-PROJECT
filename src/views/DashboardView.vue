@@ -339,14 +339,15 @@ body {
 /* Layout Dashboard */
 .dashboard-container {
   width: 100%;
-  height: 100vh;
-  min-height: 100vh;
+  height: auto;
+  min-height: 100dvh;
   max-width: none;
   margin: 0;
   padding: 2rem;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
 }
+
 
 .dashboard-header {
   display: flex;
@@ -411,7 +412,7 @@ body {
   gap: 2rem;
   width: 100%;
   min-height: 0;
-  height: calc(100vh - 5.5rem);
+  height: auto;
 }
 
 @media (max-width: 968px) {
@@ -419,6 +420,7 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
 
 /* Gaya Panel & Form */
 .form-panel, .table-panel {
@@ -429,6 +431,43 @@ body {
   width: 100%;
   height: fit-content;
 }
+
+/* Pada mobile, beri ruang agar konten tidak kepotong */
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Supaya tabel tidak “memaksa” tinggi layout */
+  .table-container {
+    max-height: calc(100dvh - 20rem);
+    overflow: auto;
+  }
+
+  .toast-notification {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+}
+
+
 
 .section-title {
   margin-top: 0;

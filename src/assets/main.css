@@ -5,7 +5,8 @@ html, body {
 }
 
 body {
-  overflow: hidden;
+  /* Jangan kunci scroll supaya mobile tidak kepotong */
+  overflow: auto;
 }
 
 #app {
